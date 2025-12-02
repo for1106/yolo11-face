@@ -1,36 +1,69 @@
-**環境 1**
+# YOLO Face Detection
 
-1. conda create -n yolo python=3.10 -y
-2. conda activate yolo
-3. pip install ultralytics
-4. pip install torch torchvision torchaudio (上面已包含安裝)
-5. pip install opencv-python (上面已包含安裝)
-6. pip install tqdm (進度條)
-7. pip install pytubefix (youtube)
+## 環境設定
 
-**環境 2**
+### 環境 1 (一般訓練)
 
-1. git clone https://github.com/ultralytics/ultralytics ultralytics_out
-2. cd ultralytics_out
-3. pip install -e .
-4. ln -s ./ultralytics ../ultralytics (拆一層)
+```bash
+# conda
+conda create -n yolo python=3.10 -y
+conda activate yolo
 
-**資料集**
+# 套件
+pip install ultralytics
+pip install torch torchvision torchaudio # 上面已包含安裝
+pip install opencv-python # 上面已包含安裝
+pip install tqdm # 進度條
+pip install pytubefix # youtube
+```
+
+### 環境 2 (想要自訂 Block 用)
+
+```bash
+git clone https://github.com/ultralytics/ultralytics ultralytics_out
+cd ultralytics_out
+pip install -e . # 安裝依賴
+ln -s ./ultralytics ../ultralytics # 拆一層
+```
+
+## 資料集
+
+### 來源
+
+http://shuoyang1213.me/WIDERFACE/index.html
+
+### 資料夾結構
+
+```md
+dataset/
+├── wider_face_split/
+├── WIDER_train/
+│ └── images/
+├── WIDER_val/
+│ └── images/
+└── widerface/
+```
+
+### 張數比例
+
+- WIDER_train: 12880
+- WIDER_val: 3226
+- WIDER_test: 16097
+
+### 難度等級
+
+- Easy: 大臉 + 清晰 + 無遮擋
+- Medium: 臉中等 + 有遮擋或角度大
+- Hard: 小臉 + 遮擋嚴重 + 角度極端 + 人多
+
+### 參數分析
+
+- face: 同張圖多少人臉
+- blur: 人臉的模糊程度
+- invalid: 難分辨的人臉
+- occlusion: 遮擋程度 1%~30%
 
 ```json
-// WIDER_train  => 12880
-// WIDER_val    => 3226
-// WIDER_test   => 16097
-
-// Easy         => 大臉 + 清晰 + 無遮擋
-// Medium       => 臉中等 + 有遮擋或角度大
-// Hard         => 小臉 + 遮擋嚴重 + 角度極端 + 人多
-
-// face         => 同張圖多少人臉
-// blur         => 人臉的模糊程度
-// invalid      => 難分辨的人臉
-// occlusion    => 遮擋程度 1%~30%
-
 {
   // train1 => yolo11.yaml
   "train1_4_5_6": {
@@ -71,7 +104,7 @@
 }
 ```
 
-**訓練參數**
+## 訓練參數
 
 - Image Size: 640/320/160
 - Epoch: 100
@@ -83,17 +116,18 @@
 - device: cuda
 - max_det: 300
 
-**結果參數**
+## Metrics
 
-- Precision (精確率) => 不要錯
-- Recall (召回率) => 不要漏
-- mAP50 (Mean Average Precision IoU=0.5)
-- mAP50-95 (Mean Average Precision IoU=0.50~0.95)
+- Precision (精確率): 不要錯
+- Recall (召回率): 不要漏
+- mAP50: (Mean Average Precision): IoU=0.5
+- mAP50-95 (Mean Average Precision): IoU=0.50~0.95
 
-**結果 1**
+## 結果 1 - Apple M1 Pro
 
-- Ultralytics 8.3.231 🚀 Python-3.10.19 torch-2.9.0 MPS
-  (Apple M1 Pro)
+- Ultralytics 8.3.231
+- Python-3.10.19
+- torch-2.9.0
 - imgsz: 320
 - device: mps
 - max_det: 30 (92%)
@@ -110,10 +144,11 @@
 | train7 | yolo103 | 50    | 8      | X         | X       | X       | X        |
 | train8 | yolo104 | 100   | 8      | 0.78677   | 0.33885 | 0.42258 | 0.24149  |
 
-**結果 2**
+## 結果 2 - NVIDIA A100-SXM4-80GB, 81222MiB
 
-- Ultralytics 8.3.233 🚀 Python-3.12.12 torch-2.9.0+cu126 CUDA:0
-  (NVIDIA A100-SXM4-80GB, 81222MiB)
+- Ultralytics 8.3.233
+- Python-3.12.12
+- torch-2.9.0+cu126
 - imgsz: 640
 - device: cuda
 - max_det: 300
@@ -125,46 +160,48 @@
 | colab2 | yolo104 | 100   | 16     | 0.83975   | 0.57361 | 0.65365 | 0.35858  |
 | colab3 | yolo103 | 92    | 16     | 0.85249   | 0.61788 | 0.70433 | 0.39063  |
 
+```
 YOLO11n summary: 181 layers, 2,624,080 parameters, 2,624,064 gradients, 6.6 GFLOPs
 YOLO100n summary: 181 layers, 2,362,323 parameters, 2,362,307 gradients, 6.5 GFLOPs
 YOLO101n summary: 136 layers, 1,625,426 parameters, 1,625,410 gradients, 6.0 GFLOPs (61.94%)
 YOLO102n summary: 154 layers, 1,873,106 parameters, 1,873,090 gradients, 6.1 GFLOPs (71.38%)
 YOLO103n summary: 205 layers, 2,576,292 parameters, 2,576,276 gradients, 13.7 GFLOPs
 YOLO104n summary: 146 layers, 1,622,674 parameters, 1,622,658 gradients, 5.9 GFLOPs (61.83%)
+```
 
-**調整方向**
+## 調整方向
 
-- YOLO100 (train4)
+<img src="./models/yolo11.jpg" width="600">
+
+> YOLO100 (train4)
+
 - 去除 C2PSA
 - 在 i16 之後, 增加 C3k2 x 2 + True (增強小物件特徵)
 
-- YOLO101 (train5)
+> YOLO101 (train5)
+
 - 去除 C2PSA
 - 直接加強 i4, C3k2 2 => 4
 - 直接加強 i16, C3k2 2 => 4
 - 去除 P5 head (對大物件處理)
 
-- YOLO102 (train6)
+> YOLO102 (train6)
+
 - 直接加強 i16, C3k2 2 => 6
 - 去除 P5 head (對大物件處理)
 
-- YOLO103 (train7)
+> YOLO103 (train7)
+
 - 在 i16 之後, 直接增加一層處理 extra-small
 - 增加 P2 head (對小物件處理)
 
-- YOLO104 (train8)
+> YOLO104 (train8)
+
 - 去除 C2PSA
 - 在 i16 之後, 增加 C3k2 x 2 + True (增強小物件特徵)
 - 去除 P5 head (對大物件處理)
 
-**比較**
-YOLO100 vs YOLO104
-對大物件處理不同
-
-YOLO101 vs YOLO104
-增強小物件特徵不同
-
-**參照論文**
+## 參照論文
 
 1. [WIDER FACE: A Face Detection Benchmark](https://arxiv.org/pdf/1511.06523)
 
