@@ -1,0 +1,12 @@
+# path: /content/drive/MyDrive/yolo/dataset/widerface
+path: ./dataset/widerface
+
+train: train
+val: val
+
+# number of classes
+nc: 1
+
+# class names
+names:
+  0: face
