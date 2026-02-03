@@ -38,7 +38,7 @@ def run_model(frame, model, color, conf=0.5):
 
 def draw_label(frame, text, color):
     font = cv2.FONT_HERSHEY_SIMPLEX
-    scale = 1.2
+    scale = 1.1
     thickness = 2
 
     (tw, th), _ = cv2.getTextSize(text, font, scale, thickness)
@@ -64,6 +64,13 @@ def combine_frames(imgs):
         bottom = np.hstack((imgs[2], imgs[3]))
         return np.vstack((top, bottom))
 
+    elif n == 6:
+        # 六張：先左右，再上下
+        top = np.hstack((imgs[0], imgs[1]))
+        middle = np.hstack((imgs[2], imgs[3]))
+        bottom = np.hstack((imgs[4], imgs[5]))
+        return np.vstack((top, middle, bottom))
+
     else:
         return imgs[0]
 
@@ -79,42 +86,38 @@ def main(input_source):
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     print(f'width: {width}, height: {height}')
 
-    # 別人的模型
-    modelF = YOLO('./models/yolo11n-face.pt')  # 225 epochs
-    modelN = YOLO('./models/yolo11n.pt')
+    # 外部模型
+    yolo11m = YOLO('./models/yolo11m.pt')
 
     # 我的模型
-    modelD = YOLO('./detect/train/weights/best.pt')
+    model1 = YOLO('./detect/train1/weights/best.pt')
     # 更動資料集
     model2 = YOLO('./detect/train2/weights/best.pt')
     model3 = YOLO('./detect/train3/weights/best.pt')
-    # 更動模型
+    # 更動模型 320
     model100 = YOLO('./detect/train4/weights/best.pt')
     model101 = YOLO('./detect/train5/weights/best.pt')
     model102 = YOLO('./detect/train6/weights/best.pt')
     model103 = YOLO('./detect/train7/weights/best.pt')
     model104 = YOLO('./detect/train8/weights/best.pt')
-    # colab
-    colabD = YOLO('./detect_colab/train/weights/best.pt')
-    colab103 = YOLO('./detect_colab/train3/weights/best.pt')
-    colab104 = YOLO('./detect_colab/train2/weights/best.pt')
+    # 更動模型 640
+    colab11 = YOLO('./detect/train9/weights/best.pt')
+    colab103 = YOLO('./detect/train10/weights/best.pt')
+    colab104 = YOLO('./detect/train11/weights/best.pt')
 
     model_map = [
-        # ('modelF',  modelF),
-        ('modelN',  modelN),
+        ('YOLO', yolo11m),
 
         # 320
-        # ('YOLO', modelD),
+        # ('YOLO-320', model1),
         # ('100',  model100),
         # ('101',  model101),
-        # ('104',  model104),
-
         # ('102',  model102),
         # ('103',  model103),
+        # ('104',  model104),
 
         # 640
-
-        # ('colabD',  colabD),
+        # ('YOLO-640',  colab11),
         # ('colab103',  colab103),
         # ('colab104',  colab104),
     ]
@@ -124,9 +127,12 @@ def main(input_source):
         (0, 0, 255),     # 紅
         (255, 0, 255),   # 紫
         (0, 255, 0),     # 綠
+        (0, 255, 0),     # 綠
+        (0, 255, 0),     # 綠
     ]
-    face_count = [0, 0, 0, 0]
-    face_time = [0, 0, 0, 0]
+    frame_count = 0
+    box_count = [0, 0, 0, 0, 0, 0]
+    detect_time = [0, 0, 0, 0, 0, 0]
     paused = False
 
     while True:
@@ -140,15 +146,15 @@ def main(input_source):
                 else:
                     paused = not paused
                     continue
-
+            frame_count += 1
             imgs = []
             for i, (name, model) in enumerate(model_map):
                 img, c, t = run_model(frame, model, colors[i])
 
-                face_count[i] += c
-                face_time[i] += t
+                box_count[i] += c
+                detect_time[i] += t
 
-                label = f"{name} - {face_count[i]} - {face_time[i]:.2f}"
+                label = f"{name} - {box_count[i]}(box) - {(detect_time[i]/frame_count)*1000:.2f}(ms)"
                 draw_label(img, label, colors[i])
 
                 imgs.append(img)
@@ -172,6 +178,7 @@ if __name__ == '__main__':
     # INPUT = './dataset/video/video.mp4'
     # INPUT = 'https://www.youtube.com/watch?v=_CrTi1aNJ-E'
     # INPUT = 'https://www.youtube.com/watch?v=-uzuhqQIaTM'
-    # INPUT = 'https://tcnvr3.taichung.gov.tw/c3c46934'
-    INPUT = 'https://tcnvr7.taichung.gov.tw/4f63f1ac'
+    INPUT = 'https://tcnvr3.taichung.gov.tw/c3c46934'
+    # INPUT = 'https://tcnvr7.taichung.gov.tw/4f63f1ac'
+    # INPUT = 'https://cctv-ss03.thb.gov.tw/T3-187K+900'
     main(INPUT)

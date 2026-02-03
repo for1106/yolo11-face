@@ -19,6 +19,8 @@ def main(path_tuple, skip):
 
     img_path = ''
     labels = []
+    is_face2 = False
+
     info = {
         'count': 0,
         'num': 0,
@@ -37,6 +39,28 @@ def main(path_tuple, skip):
     }
 
     def save_current():
+        nonlocal is_face2
+
+        if is_face2:
+            img = cv2.imread(img_path)
+            h, w = img.shape[:2]
+
+            for x, y, bw, bh in labels:
+                x1 = max(0, int(x))
+                y1 = max(0, int(y))
+                x2 = min(w - 1, int(x + bw))
+                y2 = min(h - 1, int(y + bh))
+                cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+
+            cv2.imshow('image', img)
+            key = cv2.waitKey(0)
+
+            if key == 27:
+                cv2.destroyAllWindows()
+                exit(0)
+
+            is_face2 = False
+
         if not img_path or not labels:
             return
 
@@ -94,6 +118,7 @@ def main(path_tuple, skip):
                 invalid = int(nums[7])
                 occlusion = int(nums[8])
 
+                # 在此過濾資料
                 # if bw < 10 or bh < 10:
                 #     continue
                 # if blur == 1 or blur == 2:
@@ -119,14 +144,18 @@ def main(path_tuple, skip):
                     info['face_1'] += 1
                 else:
                     info['face_2'] += 1
+                    # 放置於要顯示的條件下
+                    # is_face2 = True
 
     save_current()
     print(info)
 
 
 if __name__ == '__main__':
+    # 開啟則會自動將圖片數據轉換入訓練資料夾
     skip = True
 
+    # colab or localhost
     root = '/content/drive/MyDrive/yolo'
     root = '.'
 

@@ -1,0 +1,17 @@
+# ===== Dataset =====
+dataset/
+
+# ===== Model weights =====
+models/*.pt
+
+# ===== Ultralytics source / cache =====
+ultralytics/
+
+# ===== Python cache =====
+__pycache__/
+*.pyc
+*.pyo
+
+# ===== OS / IDE =====
+.DS_Store
+.vscode/
